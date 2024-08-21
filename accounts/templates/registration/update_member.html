@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Member</title>
+    <style>
+        body, h1, p, form, input, button {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: calc(100% - 22px);
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Update Member</h1>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="New Name (optional)" value="{{ member.name }}">
+            <input type="text" name="phone_number" placeholder="New Phone Number (optional)" value="{{ member.phone_number }}">
+            <input type="password" name="password" placeholder="New Password (optional)">
+            <input type="file" name="profile_picture" accept="image/*">
+            <button type="submit">Update</button>
+        </form>
+    </div>
+</body>
+</html>

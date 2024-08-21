@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <style>
+        body, h1, h2, p, form, input, button {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        input[type="email"],
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin-top: 10px;
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Register</h2>
+        <form method="post" id="registerForm">
+            {% csrf_token %}
+            <input type="email" name="email" placeholder="Email" required><br>
+            <input type="text" name="username" placeholder="Username" required><br>
+            <input type="text" name="phone_number" placeholder="Phone Number"><br>
+            <input type="password" name="password" placeholder="Password" required><br>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required><br>
+            <button type="submit">Register</button>
+        </form>
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').onsubmit = function(event) {
+            event.preventDefault();
+            var form = new FormData(this);
+            fetch("{% url 'register' %}", {
+                method: 'POST',
+                body: form,
+                headers: {'X-CSRFToken': form.get('csrfmiddlewaretoken')}
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    window.location.href = data.redirect;  // Redirect to login page
+                } else if (data.error) {
+                    document.getElementById('message').innerText = data.error;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Operations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #ffffff;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="file"],
+        button {
+            margin: 10px 0;
+            padding: 10px;
+            width: calc(100% - 22px);
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-update {
+            background-color: #28a745;
+        }
+
+        .btn-update:hover {
+            background-color: #218838;
+        }
+
+        .btn-cancel,
+        .btn-delete {
+            background-color: #dc3545;
+        }
+
+        .btn-cancel:hover,
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        img {
+            width: 100px;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .editable-row {
+            display: none;
+        }
+
+        .editing .editable-row {
+            display: table-row;
+        }
+
+        .editing .view-row {
+            display: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CRUD Operations</h1>
+
+        <!-- Form to Create a User -->
+        <form method="post" enctype="multipart/form-data" id="createForm">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="Name" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="text" name="phone_number" placeholder="Phone Number">
+            <input type="file" name="profile_picture" accept="image/*">
+            <button type="submit" name="action" value="create">Create User</button>
+        </form>
+
+        <!-- Form to Delete a User -->
+        <form method="post" id="deleteForm">
+            {% csrf_token %}
+            <input type="email" name="email" placeholder="Email of User to Delete" required>
+            <button type="submit" name="action" value="delete" class="btn-delete">Delete User</button>
+        </form>
+
+        <!-- Displaying the list of registered users -->
+        <h2>Registered Users</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Profile Picture</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                <tr id="row-{{ member.email }}" class="view-row">
+                    <td>{{ member.name }}</td>
+                    <td>{{ member.email }}</td>
+                    <td>{{ member.phone_number }}</td>
+                    <td>
+                        {% if member.profile_picture %}
+                            <img src="data:image/jpeg;base64,{{ member.profile_picture }}" alt="Profile Picture">
+                        {% else %}
+                            No Picture
+                        {% endif %}
+                    </td>
+                    <td class="action-buttons">
+                        <button type="button" onclick="editRow('{{ member.email }}')" class="btn-update">Edit</button>
+                        <button type="button" onclick="deleteRow('{{ member.email }}')" class="btn-delete">Delete</button>
+                    </td>
+                </tr>
+                <tr id="edit-row-{{ member.email }}" class="editable-row">
+                    <form method="post" enctype="multipart/form-data" action="{% url 'update_member' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="old_email" value="{{ member.email }}">
+                        <td><input type="text" name="name" value="{{ member.name }}" required></td>
+                        <td><input type="text" name="email" value="{{ member.email }}" required></td>
+                        <td><input type="text" name="phone_number" value="{{ member.phone_number }}"></td>
+                        <td>
+                            {% if member.profile_picture %}
+                                <img src="data:image/jpeg;base64,{{ member.profile_picture }}" alt="Profile Picture">
+                            {% else %}
+                                No Picture
+                            {% endif %}
+                            <input type="file" name="profile_picture" accept="image/*">
+                        </td>
+                        <td class="action-buttons">
+                            <button type="submit" class="btn-update">Update</button>
+                            <button type="button" onclick="cancelEdit('{{ member.email }}')" class="btn-cancel">Cancel</button>
+                        </td>
+                    </form>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function editRow(email) {
+            document.getElementById('row-' + email).style.display = 'none';
+            document.getElementById('edit-row-' + email).style.display = 'table-row';
+        }
+
+        function cancelEdit(email) {
+            document.getElementById('row-' + email).style.display = 'table-row';
+            document.getElementById('edit-row-' + email).style.display = 'none';
+        }
+
+        function deleteRow(email) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                // Create and submit the form to delete the user
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = "{% url 'delete_member' %}";
+
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const inputCsrf = document.createElement('input');
+                inputCsrf.type = 'hidden';
+                inputCsrf.name = 'csrfmiddlewaretoken';
+                inputCsrf.value = csrfToken;
+                form.appendChild(inputCsrf);
+
+                const inputEmail = document.createElement('input');
+                inputEmail.type = 'hidden';
+                inputEmail.name = 'email';
+                inputEmail.value = email;
+                form.appendChild(inputEmail);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</body>
+</html>

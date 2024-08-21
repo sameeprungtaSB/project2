@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Member</title>
+    <style>
+        /* Include internal CSS here */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create New Member</h1>
+        <form method="post" action="{% url 'create_member' %}">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="Name" required><br>
+            <input type="email" name="email" placeholder="Email" required><br>
+            <input type="text" name="phone_number" placeholder="Phone Number"><br>
+            <button type="submit">Create Member</button>
+        </form>
+        <div id="message"></div>
+    </div>
+</body>
+</html>
